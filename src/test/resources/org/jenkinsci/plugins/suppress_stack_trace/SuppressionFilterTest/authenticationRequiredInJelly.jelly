@@ -1,0 +1,10 @@
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:l="/lib/layout">
+  <l:layout title="${%about(app.VERSION)}" norefresh="true" permission="">
+    <l:main-panel>
+      ${it.doAuthenticationRequired()}
+
+      <h1>You are admin</h1>
+    </l:main-panel>
+  </l:layout>
+</j:jelly>
