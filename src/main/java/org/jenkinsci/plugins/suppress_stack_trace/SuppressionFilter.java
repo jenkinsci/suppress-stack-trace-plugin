@@ -12,6 +12,7 @@ import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.util.UUID;
 import java.util.logging.Level;
@@ -65,9 +66,16 @@ public class SuppressionFilter implements Filter {
                     rsp.setStatus(SC_INTERNAL_SERVER_ERROR);
                     rsp.setContentType("text/html;charset=UTF-8");
                     rsp.setHeader("Cache-Control","no-cache,must-revalidate");
-                    PrintWriter w = rsp.getWriter();
+                    PrintWriter w = null;
+                    try {
+                        w = rsp.getWriter();
+                    } catch (IllegalStateException x) {
+                        // stream mode?
+                        w = new PrintWriter(new OutputStreamWriter(rsp.getOutputStream(),"UTF-8"));
+                    }
                     w.println("<html><head><title>"+Messages.SuppressionFilter_Title()+"</title><body>");
                     w.println("<p>"+Messages.SuppressionFilter_ContactAdmin(errorId)+"</p>");
+                    w.println(Messages.SuppressionFilter_Footer());
                     w.println("</body></html>");
                     w.close();
                 } catch (Exception x) {

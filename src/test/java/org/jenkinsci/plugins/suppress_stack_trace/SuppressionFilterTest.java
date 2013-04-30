@@ -103,5 +103,6 @@ public class SuppressionFilterTest extends HudsonTestCase {
         // shouldn't contain anything that looks like an exception
         assertTrue(payload, !payload.contains("org.jenkinsci."));
         assertTrue(payload, !payload.contains("Exception"));
+        assertTrue(payload, payload.contains("https://wiki.jenkins-ci.org/display/JENKINS/Suppress+Stack+Trace+Plugin"));
     }
 }
