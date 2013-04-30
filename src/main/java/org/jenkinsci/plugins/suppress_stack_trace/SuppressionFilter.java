@@ -32,6 +32,9 @@ public class SuppressionFilter implements Filter {
         try {
             chain.doFilter(request,response);
         } catch (Throwable e) {
+            if (e instanceof AccessDeniedException) {
+                throw (AccessDeniedException) e;
+            }
             if (e instanceof ServletException) {
                 if (((ServletException)e).getRootCause() instanceof AccessDeniedException)
                     throw (ServletException)e; // this exception needs to be pass through since Jenkins has a filter that reacts to this
