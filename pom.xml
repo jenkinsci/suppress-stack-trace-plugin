@@ -10,6 +10,7 @@
   <artifactId>suppress-stack-trace</artifactId>
   <version>1.1-SNAPSHOT</version>
   <packaging>hpi</packaging>
+  <url>https://wiki.jenkins-ci.org/display/JENKINS/Suppress+Stack+Trace+Plugin</url>
 
   <name>Stack Trace Suppression Plugin</name>
   <description>Hide stack trace from ordinary users for security-sensitive deployments</description>
