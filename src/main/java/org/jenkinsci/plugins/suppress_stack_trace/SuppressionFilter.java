@@ -14,12 +14,12 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
-import java.net.SocketException;
 import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import static javax.servlet.http.HttpServletResponse.SC_INTERNAL_SERVER_ERROR;
+import org.kohsuke.stapler.Stapler;
 
 /**
  * @author Kohsuke Kawaguchi
@@ -40,7 +40,7 @@ public class SuppressionFilter implements Filter {
                 if (((ServletException)e).getRootCause() instanceof AccessDeniedException)
                     throw (ServletException)e; // this exception needs to be pass through since Jenkins has a filter that reacts to this
             }
-            if (isSocketException(e)) {
+            if (Stapler.isSocketException(e)) {
                 return;
             }
 
@@ -108,20 +108,6 @@ public class SuppressionFilter implements Filter {
     protected boolean showStackTrace(Throwable t) {
         // TODO: define a permission for this
         return Jenkins.getInstance().hasPermission(Jenkins.ADMINISTER);
-    }
-
-    // Copied from Stapler.
-    private static boolean isSocketException(Throwable x) { // JENKINS-10524
-        if (x == null) {
-            return false;
-        }
-        if (x instanceof SocketException) {
-            return true;
-        }
-        if (String.valueOf(x.getMessage()).equals("Broken pipe")) { // TBD I18N
-            return true;
-        }
-        return isSocketException(x.getCause());
     }
 
     public void destroy() {
