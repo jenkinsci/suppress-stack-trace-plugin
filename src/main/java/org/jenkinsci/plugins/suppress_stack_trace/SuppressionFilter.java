@@ -98,7 +98,7 @@ public class SuppressionFilter implements Filter {
      */
     protected String reportError(HttpServletRequest req, Throwable e) {
         String id = UUID.randomUUID().toString();
-        LOGGER.log(Level.WARNING, Messages.SuppressionFilter_RequestProcessingFailed(id, req.getRemoteAddr()),e);
+        LOGGER.log(Level.WARNING, "Request processing failed. clientIP=" + id + ", ErrorID=" + req.getRemoteAddr(), e);
         return id;
     }
 
