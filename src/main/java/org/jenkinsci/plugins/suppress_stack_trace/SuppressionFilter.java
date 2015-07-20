@@ -65,7 +65,8 @@ public class SuppressionFilter implements Filter {
                 }
 
                 throw x;
-            } else {
+            } else if (request instanceof HttpServletRequest && response instanceof HttpServletResponse) { 
+                // We cannot decorate the stuff for non-Http responses
                 String errorId = reportError((HttpServletRequest) request,e);
 
                 try {
@@ -85,7 +86,9 @@ public class SuppressionFilter implements Filter {
                     w.println(Messages.SuppressionFilter_Footer());
                     w.println("</body></html>");
                     w.close();
-                } catch (Exception x) {
+                } catch (Error error) {
+                    throw error; // We propagate errors upstairs
+                } catch (Throwable x) {
                     // if we fail to report this error, bail out
                     throw new ServletException(Messages.SuppressionFilter_ContactAdmin(errorId)); // not chaining x since it might contain something
                 }

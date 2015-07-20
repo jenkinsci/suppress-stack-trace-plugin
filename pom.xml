@@ -15,19 +15,25 @@
   <name>Stack Trace Suppression Plugin</name>
   <description>Hide stack trace from ordinary users for security-sensitive deployments</description>
 
+  <properties>
+    <findbugs-maven-plugin.version>3.0.1</findbugs-maven-plugin.version>
+    <findbugs.failOnError>true</findbugs.failOnError>
+  </properties>
+
   <build>
     <plugins>
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>findbugs-maven-plugin</artifactId>
-        <version>3.0.1</version>
+        <version>${findbugs-maven-plugin.version}</version>
         <configuration>
           <xmlOutput>true</xmlOutput>
           <findbugsXmlWithMessages>true</findbugsXmlWithMessages>
-          <failOnError>false</failOnError>
+          <failOnError>${findbugs.failOnError}</failOnError>
         </configuration>
         <executions>
           <execution>
+            <id>run-findbugs</id>
             <phase>verify</phase> 
             <goals>
               <goal>check</goal> 
