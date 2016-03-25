@@ -19,6 +19,10 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import static javax.servlet.http.HttpServletResponse.SC_INTERNAL_SERVER_ERROR;
+import static org.jenkinsci.plugins.suppress_stack_trace.SuppressStackTraceConfiguration.EVERYBODY;
+import static org.jenkinsci.plugins.suppress_stack_trace.SuppressStackTraceConfiguration.NOBODY;
+import static org.jenkinsci.plugins.suppress_stack_trace.SuppressStackTraceConfiguration.USERS;
+
 import org.kohsuke.stapler.Stapler;
 
 /**
@@ -109,8 +113,17 @@ public class SuppressionFilter implements Filter {
      * Should we show this stack trace to the requesting user?
      */
     protected boolean showStackTrace(Throwable t) {
-        // TODO: define a permission for this
-        return Jenkins.getInstance().hasPermission(Jenkins.ADMINISTER);
+        SuppressStackTraceConfiguration config = SuppressStackTraceConfiguration.get();
+        String value = config.getSuppressStactraceTo();
+        boolean ret = false;
+        if(EVERYBODY.equals(value)){
+            ret = false;
+        } else if(NOBODY.equals(value)){
+            ret = true;
+        } else {
+            ret = Jenkins.getInstance().hasPermission(Jenkins.ADMINISTER);
+        }
+        return ret;
     }
 
     public void destroy() {
