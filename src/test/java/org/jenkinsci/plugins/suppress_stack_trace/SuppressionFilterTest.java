@@ -6,6 +6,11 @@ import hudson.security.GlobalMatrixAuthorizationStrategy;
 import hudson.security.HudsonPrivateSecurityRealm;
 import hudson.util.PluginServletFilter;
 import jenkins.model.Jenkins;
+
+import static org.jenkinsci.plugins.suppress_stack_trace.SuppressStackTraceConfiguration.EVERYBODY;
+import static org.jenkinsci.plugins.suppress_stack_trace.SuppressStackTraceConfiguration.NOBODY;
+import static org.jenkinsci.plugins.suppress_stack_trace.SuppressStackTraceConfiguration.USERS;
+
 import org.jvnet.hudson.test.HudsonTestCase;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.HttpResponses;
@@ -76,6 +81,40 @@ public class SuppressionFilterTest extends HudsonTestCase {
     }
 
     /**
+     * Test with Suppers stack trace to nobody configured
+     */
+    public void test2() throws Exception {
+        SuppressStackTraceConfiguration config = SuppressStackTraceConfiguration.get();
+        config.setSuppressStactraceTo(NOBODY);
+        WebClient wc = createWebClient();
+        wc.setThrowExceptionOnFailingStatusCode(false);
+
+        verifyStackTrace(wc.goTo("/self/test1"));
+        verifyStackTrace(wc.goTo("/self/test2"));
+        verifyStackTrace(wc.goTo("/self/test3"));
+    }
+
+
+    /**
+     * Test with Suppers stack trace to users configured
+     */
+    public void test3() throws Exception {
+        SuppressStackTraceConfiguration config = SuppressStackTraceConfiguration.get();
+        config.setSuppressStactraceTo(USERS);
+        test1();
+    }
+
+
+    /**
+     * Test with Suppers stack trace to everybody configured
+     */
+    public void test4() throws Exception {
+        SuppressStackTraceConfiguration config = SuppressStackTraceConfiguration.get();
+        config.setSuppressStactraceTo(EVERYBODY);
+        test1();
+    }
+
+    /**
      * Jenkins internally uses an exception to trigger a sequence for an authentication.
      * We shouldn't interfere with that
      */
@@ -104,5 +143,14 @@ public class SuppressionFilterTest extends HudsonTestCase {
         assertTrue(payload, !payload.contains("org.jenkinsci."));
         assertTrue(payload, !payload.contains("Exception"));
         assertTrue(payload, payload.contains("https://wiki.jenkins-ci.org/display/JENKINS/Suppress+Stack+Trace+Plugin"));
+    }
+
+    private void verifyStackTrace(HtmlPage r) {
+        assertEquals(true, r.getWebResponse().getStatusCode()==500);
+        assertEquals(true, "text/html".equals(r.getWebResponse().getContentType()));
+        String payload = r.getWebResponse().getContentAsString();
+
+        assertTrue(payload, payload.contains("Stack trace"));
+        assertTrue(payload, payload.contains("Exception"));
     }
 }
