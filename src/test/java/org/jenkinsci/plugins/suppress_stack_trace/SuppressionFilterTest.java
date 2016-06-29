@@ -6,43 +6,46 @@ import hudson.security.GlobalMatrixAuthorizationStrategy;
 import hudson.security.HudsonPrivateSecurityRealm;
 import hudson.util.PluginServletFilter;
 import jenkins.model.Jenkins;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
 import org.jvnet.hudson.test.HudsonTestCase;
+import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.JenkinsRule.WebClient;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.HttpResponses;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 /**
  * @author Kohsuke Kawaguchi
  */
-public class SuppressionFilterTest extends HudsonTestCase {
+public class SuppressionFilterTest {
 
     private HudsonPrivateSecurityRealm realm;
     private GlobalMatrixAuthorizationStrategy strategy;
     private SuppressionFilter filter;
     private PluginImpl plugin;
+    
+    @Rule
+    public JenkinsRule jr = new CustomRule();
+    private Jenkins jenkins;
 
-    public HttpResponse doTest1() throws Exception {
-        throw new Exception();
-    }
 
-    public HttpResponse doTest2() throws Exception {
-        throw new RuntimeException();
-    }
-
-    public HttpResponse doTest3() throws Exception {
-        throw new LinkageError();
-    }
 
     /**
      * This should trigger a redirect
      */
     public HttpResponse doAuthenticationRequired() throws Exception {
-        Jenkins.getInstance().checkPermission(Jenkins.ADMINISTER);
+        jenkins.checkPermission(Jenkins.ADMINISTER);
         return HttpResponses.ok();
     }
 
-    @Override
-    protected void setUp() throws Exception {
-        super.setUp();
+    @Before
+    public void setUp() throws Exception {
+        jenkins = jr.getInstance();
         realm = new HudsonPrivateSecurityRealm(true, false, null);
         jenkins.setSecurityRealm(realm);
         realm.createAccount("alice", "alice");
@@ -56,32 +59,33 @@ public class SuppressionFilterTest extends HudsonTestCase {
         plugin.start();
     }
 
-    @Override
-    protected void tearDown() throws Exception {
+    @After
+    public void tearDown() throws Exception {
         if (plugin!=null)
             plugin.stop();
-        super.tearDown();
     }
 
     /**
      * We should cover all kinds of exceptions
      */
+    @Test
     public void test1() throws Exception {
-        WebClient wc = createWebClient();
-        wc.setThrowExceptionOnFailingStatusCode(false);
+        WebClient wc = jr.createWebClient();
+        wc.getOptions().setThrowExceptionOnFailingStatusCode(false);
 
-        verifyErrorPage(wc.goTo("/self/test1"));
-        verifyErrorPage(wc.goTo("/self/test2"));
-        verifyErrorPage(wc.goTo("/self/test3"));
+        verifyErrorPage(wc.goTo("self/test1"));
+        verifyErrorPage(wc.goTo("self/test2"));
+        verifyErrorPage(wc.goTo("self/test3"));
     }
 
     /**
      * Jenkins internally uses an exception to trigger a sequence for an authentication.
      * We shouldn't interfere with that
      */
+    @Test
     public void testAuthenticationTrigger() throws Exception {
-        WebClient wc = createWebClient();
-        wc.setThrowExceptionOnFailingStatusCode(false);
+        WebClient wc = jr.createWebClient();
+        wc.getOptions().setThrowExceptionOnFailingStatusCode(false);
 
         // this should send us to the login page, not to the error page
         verifyLoginPage(wc.goTo("/self/authenticationRequired"));
@@ -92,7 +96,7 @@ public class SuppressionFilterTest extends HudsonTestCase {
         String payload = r.getWebResponse().getContentAsString();
 
         assertEquals(payload, 200, r.getWebResponse().getStatusCode());
-        assertEquals(payload, "/login", r.getWebResponse().getUrl().getPath());
+        assertEquals(payload, "/login", r.getUrl().getPath());
     }
 
     private void verifyErrorPage(HtmlPage r) {
@@ -104,5 +108,19 @@ public class SuppressionFilterTest extends HudsonTestCase {
         assertTrue(payload, !payload.contains("org.jenkinsci."));
         assertTrue(payload, !payload.contains("Exception"));
         assertTrue(payload, payload.contains("https://wiki.jenkins-ci.org/display/JENKINS/Suppress+Stack+Trace+Plugin"));
+    }
+    
+    static class CustomRule extends JenkinsRule {
+        public HttpResponse doTest1() throws Exception {
+            throw new Exception();
+        }
+
+        public HttpResponse doTest2() throws Exception {
+            throw new RuntimeException();
+        }
+
+        public HttpResponse doTest3() throws Exception {
+            throw new LinkageError();
+        }
     }
 }
