@@ -31,17 +31,7 @@ public class SuppressionFilterTest {
     
     @Rule
     public JenkinsRule jr = new CustomRule();
-    private Jenkins jenkins;
-
-
-
-    /**
-     * This should trigger a redirect
-     */
-    public HttpResponse doAuthenticationRequired() throws Exception {
-        jenkins.checkPermission(Jenkins.ADMINISTER);
-        return HttpResponses.ok();
-    }
+    public Jenkins jenkins;
 
     @Before
     public void setUp() throws Exception {
@@ -88,8 +78,8 @@ public class SuppressionFilterTest {
         wc.getOptions().setThrowExceptionOnFailingStatusCode(false);
 
         // this should send us to the login page, not to the error page
-        verifyLoginPage(wc.goTo("/self/authenticationRequired"));
-        verifyLoginPage(wc.goTo("/self/authenticationRequiredInJelly"));
+        verifyLoginPage(wc.goTo("self/authenticationRequired"));
+        verifyLoginPage(wc.goTo("self/authenticationRequiredInJelly"));
     }
 
     private void verifyLoginPage(HtmlPage r) {
@@ -121,6 +111,14 @@ public class SuppressionFilterTest {
 
         public HttpResponse doTest3() throws Exception {
             throw new LinkageError();
+        }
+
+       /**
+        * This should trigger a redirect
+        */
+        public HttpResponse doAuthenticationRequired() throws Exception {
+            jenkins.checkPermission(Jenkins.ADMINISTER);
+            return HttpResponses.ok();
         }
     }
 }
