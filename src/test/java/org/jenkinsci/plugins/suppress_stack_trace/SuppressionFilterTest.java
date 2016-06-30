@@ -86,7 +86,7 @@ public class SuppressionFilterTest {
         String payload = r.getWebResponse().getContentAsString();
 
         assertEquals(payload, 200, r.getWebResponse().getStatusCode());
-        assertEquals(payload, "/login", r.getUrl().getPath());
+        assertEquals(payload, "/jenkins/login", r.getUrl().getPath());
     }
 
     private void verifyErrorPage(HtmlPage r) {
