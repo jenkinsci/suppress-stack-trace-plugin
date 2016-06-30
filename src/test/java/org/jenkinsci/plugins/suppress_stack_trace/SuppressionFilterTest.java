@@ -1,9 +1,6 @@
 package org.jenkinsci.plugins.suppress_stack_trace;
 
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
-import hudson.security.AccessDeniedException2;
-import hudson.security.GlobalMatrixAuthorizationStrategy;
-import hudson.security.HudsonPrivateSecurityRealm;
 import hudson.util.PluginServletFilter;
 import jenkins.model.Jenkins;
 import org.junit.After;
@@ -13,6 +10,7 @@ import org.junit.Test;
 import org.jvnet.hudson.test.HudsonTestCase;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.JenkinsRule.WebClient;
+import org.jvnet.hudson.test.MockAuthorizationStrategy;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.HttpResponses;
 
@@ -24,8 +22,6 @@ import static org.junit.Assert.assertTrue;
  */
 public class SuppressionFilterTest {
 
-    private HudsonPrivateSecurityRealm realm;
-    private GlobalMatrixAuthorizationStrategy strategy;
     private SuppressionFilter filter;
     private PluginImpl plugin;
     
@@ -36,14 +32,11 @@ public class SuppressionFilterTest {
     @Before
     public void setUp() throws Exception {
         jenkins = jr.getInstance();
-        realm = new HudsonPrivateSecurityRealm(true, false, null);
-        jenkins.setSecurityRealm(realm);
-        realm.createAccount("alice", "alice");
-        realm.createAccount("bob","bob");
-        strategy = new GlobalMatrixAuthorizationStrategy();
-        jenkins.setAuthorizationStrategy(strategy);
-        strategy.add(Jenkins.ADMINISTER, "alice");
-        strategy.add(Jenkins.READ,"anonymous");
+        jenkins.setSecurityRealm(jr.createDummySecurityRealm());
+        jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy().
+            grant(Jenkins.ADMINISTER).everywhere().to("alice").
+            //grant(Jenkins.READ, Job.READ).everywhere().to("bob").
+            grant(Jenkins.READ).everywhere().to("anonymous"));
 
         plugin = new PluginImpl();
         plugin.start();
@@ -100,7 +93,7 @@ public class SuppressionFilterTest {
         assertTrue(payload, payload.contains("https://wiki.jenkins-ci.org/display/JENKINS/Suppress+Stack+Trace+Plugin"));
     }
     
-    static class CustomRule extends JenkinsRule {
+    public static class CustomRule extends JenkinsRule {
         public HttpResponse doTest1() throws Exception {
             throw new Exception();
         }
