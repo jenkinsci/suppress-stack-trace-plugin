@@ -11,7 +11,7 @@
   <artifactId>suppress-stack-trace</artifactId>
   <version>${revision}${changelist}</version>
   <packaging>hpi</packaging>
-  <url>https://wiki.jenkins-ci.org/display/JENKINS/Suppress+Stack+Trace+Plugin</url>
+  <url>https://github.com/jenkinsci/suppress-stack-trace-plugin</url>
 
   <name>Stack Trace Suppression Plugin (deprecated)</name>
 
