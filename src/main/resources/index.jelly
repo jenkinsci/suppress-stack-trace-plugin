@@ -1,4 +1,4 @@
 <?jelly escape-by-default='true'?>
 <div>
-  Hides stack trace from ordinary users for security-sensitive deployments.
+  <strong>Deprecated</strong>: no longer necessary in new versions of Jenkins.
 </div>
